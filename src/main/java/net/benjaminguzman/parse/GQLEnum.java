@@ -69,7 +69,7 @@ public class GQLEnum extends GQLDataType {
 			} else
 				valueComment = null;
 
-			lineEndIdx = str.indexOf('\n', cursorIdx);
+			lineEndIdx = GQL.lineEndIdx(str, cursorIdx);
 			gqlEnum.values.add(new EnumValue(str.substring(cursorIdx, lineEndIdx).strip(), valueComment));
 			cursorIdx = lineEndIdx + 1;
 		}

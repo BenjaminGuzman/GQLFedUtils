@@ -1,0 +1,7 @@
+keepPatterns:
+  - "@GK"
+  - "@GateKeep"
+  - "@GKeep"
+
+secondKeepPatterns:
+  - ADMIN

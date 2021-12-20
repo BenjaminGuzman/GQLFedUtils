@@ -26,10 +26,16 @@ directive @join__graph(name: String!, url: String!) on ENUM_VALUE
 """
 This should not be removed
 """
-type BoringType {
+type BoringType
+  @join__owner(graph: USERS) {
     id: ID!
 
-    name: String!
+    name: String! @join__field(graph: USERS)
+
+    """
+    Testing fields with params and rare "return types" are returned
+    """
+    a(b: String): String! @join__field(graph: USERS)
 }
 
 """

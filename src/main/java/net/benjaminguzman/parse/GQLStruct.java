@@ -69,7 +69,7 @@ public abstract class GQLStruct extends GQLDataType {
 				comment = null;
 
 			// let's assume all fields are 1 line long
-			int fieldEndIdx = str.indexOf('\n', cursorIdx);
+			int fieldEndIdx = GQL.lineEndIdx(str, cursorIdx);
 			String fieldStr = str.substring(cursorIdx, fieldEndIdx);
 			fields.add(GQLField.parse(fieldStr, comment));
 
