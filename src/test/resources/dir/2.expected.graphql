@@ -1,3 +1,6 @@
+# Comments....
+# Comments should not be removed
+
 """
 Testing...
 """
@@ -16,6 +19,6 @@ input O {
 }
 
 """
-Testing...
+Scalars should be kept even if they're not annotated
 """
 scalar DateTime

@@ -19,6 +19,6 @@ enum K {
 }
 
 """
-@GK KEEP ME!
+Scalars should be kept even if they're not annotated
 """
 scalar DateTime

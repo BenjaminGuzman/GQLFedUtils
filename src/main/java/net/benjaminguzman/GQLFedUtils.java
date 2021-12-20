@@ -19,7 +19,7 @@ import picocli.CommandLine;
 )
 public class GQLFedUtils {
 	public static void main(String... args) {
-		int exitCode = new CommandLine(new GQLFedUtils()).execute(args);
-//		System.out.println(exitCode);
+		System.setProperty("java.util.logging.SimpleFormatter.format", "[%4$-7s] [%1$tF %1$tT] %5$s %n");
+		new CommandLine(new GQLFedUtils()).execute(args);
 	}
 }

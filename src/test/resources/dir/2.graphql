@@ -33,7 +33,9 @@ input O {
 }
 
 """
-Testing...
-@GK KEEP ME!
+Scalars should be kept even if they're not annotated
 """
 scalar DateTime
+
+# Comments....
+# Comments should not be removed

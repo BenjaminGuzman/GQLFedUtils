@@ -1,11 +1,11 @@
 package net.benjaminguzman.purge;
 
+import net.benjaminguzman.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import picocli.CommandLine;
 
-import javax.naming.ConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -32,9 +32,7 @@ public class GQLScalar extends GQLDataType {
 		cursorIdx += GQLKeyword.SCALAR.toString().length(); // exclude "scalar" from processing
 
 		// parse name
-		int lineEndIdx = str.indexOf('\n', cursorIdx);
-		if (lineEndIdx == -1)
-			lineEndIdx = str.length();
+		int lineEndIdx = GQL.lineEndIdx(str, cursorIdx);
 		String name = str.substring(cursorIdx, lineEndIdx).strip();
 
 		return new GQLScalar(name, comment);
