@@ -215,6 +215,11 @@ public class Purge implements Runnable {
 					return;
 
 				switch (dataType.getKeyword()) {
+					case TYPE:
+						// Query type should always be kept
+						if (!dataType.getName().equals("Query"))
+							return;
+						// yes, don't use break here. We need to keep the Query type
 					case DIRECTIVE:
 					case SCHEMA:
 					case SCALAR:

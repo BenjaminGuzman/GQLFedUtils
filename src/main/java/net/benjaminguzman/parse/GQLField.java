@@ -39,50 +39,6 @@ public class GQLField extends GQLDataType {
 		this.returnType = returnType;
 	}
 
-	/**
-	 * Parse a graphql field
-	 * <p>
-	 * A field has the following structure:
-	 * <p>
-	 * {@code name(parameters): returnType}
-	 * <p>
-	 * or
-	 * <p>
-	 * {@code name: returnType}
-	 *
-	 * @param str     the string from which the field will be parsed
-	 * @param comment comment for the field
-	 * @return a {@link GQLField} object
-	 * @throws InvalidGQLSyntax in case the string has an invalid graphql syntax
-	 */
-	public static GQLField parse(@NotNull String str, @Nullable String comment) throws InvalidGQLSyntax {
-		int startIdx = GQL.ignoreWhitespaces(str, 0);
-
-		// extract the name
-		int endIdx = startIdx + 1;
-		while (str.charAt(endIdx) != '(' && str.charAt(endIdx) != ':') ++endIdx;
-		String name = str.substring(startIdx, endIdx).strip();
-
-		// extract params (if any)
-		String params = null;
-		if (str.charAt(endIdx) == '(') { // should have params
-			startIdx = endIdx + 1;
-			endIdx = str.indexOf(')', startIdx);
-			if (endIdx == -1)
-				throw new InvalidGQLSyntax(GQLField.class, str, "')' is missing");
-			params = str.substring(startIdx, endIdx).strip();
-		}
-
-		// extract return type
-		while (str.charAt(endIdx) != ':') ++endIdx;
-		startIdx = endIdx + 1;
-		endIdx = GQL.lineEndIdx(str, startIdx);
-		assert endIdx > -1;
-		String returnType = str.substring(startIdx, endIdx).strip();
-
-		return new GQLField(name, returnType, comment).setParams(params);
-	}
-
 	@NotNull
 	public String getReturnType() {
 		return returnType;

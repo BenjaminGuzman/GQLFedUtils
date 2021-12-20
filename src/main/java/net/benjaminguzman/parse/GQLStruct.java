@@ -42,23 +42,19 @@ public abstract class GQLStruct extends GQLDataType {
 	 * Every space can be a finite number of whitespaces.
 	 * <p>
 	 * Comments are delimited by """
-	 * <p>
-	 * To see more about the field format go to {@link GQLField#parse(String, String)}
 	 *
 	 * @param str string from which fields will be parsed
 	 * @return a list of parsed fields
 	 * @throws InvalidGQLSyntax if some field couldn't be parsed because it is invalid
-	 * @see GQLField#parse(String, String)
 	 */
 	public static List<GQLField> parseFields(@NotNull String str) throws InvalidGQLSyntax {
 		String comment;
 		List<GQLField> fields = new ArrayList<>();
 		int cursorIdx = 0;
+		int endIdx;
 
-		while (cursorIdx < str.length()) {
-			cursorIdx = GQL.ignoreWhitespaces(str, cursorIdx);
-
-			// parse comments
+		while ((cursorIdx = GQL.ignoreWhitespaces(str, cursorIdx)) < str.length()) {
+			// extract comments
 			if (str.startsWith(GQL.COMMENT_DELIMITER, cursorIdx)) {
 				int commentEndIdx = str.indexOf(GQL.COMMENT_DELIMITER, cursorIdx + 3);
 				comment = str.substring(cursorIdx + 3, commentEndIdx); // +3 to skip the delimiter """
@@ -68,12 +64,30 @@ public abstract class GQLStruct extends GQLDataType {
 			} else
 				comment = null;
 
-			// let's assume all fields are 1 line long
-			int fieldEndIdx = GQL.lineEndIdx(str, cursorIdx);
-			String fieldStr = str.substring(cursorIdx, fieldEndIdx);
-			fields.add(GQLField.parse(fieldStr, comment));
+			// extract the name
+			endIdx = cursorIdx + 1;
+			while (str.charAt(endIdx) != '(' && str.charAt(endIdx) != ':') ++endIdx;
+			String name = str.substring(cursorIdx, endIdx).strip();
 
-			cursorIdx = fieldEndIdx + 1;
+			// extract params (if any)
+			String params = null;
+			if (str.charAt(endIdx) == '(') { // should have params
+				cursorIdx = endIdx + 1;
+				endIdx = str.indexOf(')', cursorIdx);
+				if (endIdx == -1)
+					throw new InvalidGQLSyntax(GQLField.class, str, "')' is missing");
+				params = str.substring(cursorIdx, endIdx);
+			}
+
+			// extract return type
+			while (str.charAt(endIdx) != ':') ++endIdx;
+			cursorIdx = endIdx + 1;
+			endIdx = GQL.lineEndIdx(str, cursorIdx);
+			assert endIdx > -1;
+			String returnType = str.substring(cursorIdx, endIdx).strip();
+
+			fields.add(new GQLField(name, returnType, comment).setParams(params));
+			cursorIdx = endIdx + 1;
 		}
 
 		return fields;
