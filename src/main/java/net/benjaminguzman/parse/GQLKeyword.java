@@ -6,7 +6,9 @@ public enum GQLKeyword {
 	SCALAR("scalar"),
 	ENUM("enum"),
 	INPUT("input"),
-	TYPE("type");
+	TYPE("type"),
+	DIRECTIVE("directive"),
+	SCHEMA("schema");
 
 	@NotNull
 	private final String gqlKeyword;

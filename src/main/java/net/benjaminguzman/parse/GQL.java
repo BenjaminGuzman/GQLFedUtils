@@ -8,10 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Wrapper class to contain all parsed contents inside a graphql file
@@ -31,10 +29,10 @@ public class GQL {
 	private List<GQLDataType> dataTypes = new ArrayList<>();
 
 	/**
-	 * Miscellaneous text that couldn't be parsed
+	 * Comments indicated with '#'
 	 */
 	@Nullable
-	private String misc;
+	private String comments;
 
 	/**
 	 * Parse contents from the given file
@@ -58,7 +56,7 @@ public class GQL {
 	 */
 	public static GQL from(@NotNull String str) throws InvalidGQLSyntax {
 		GQL gql = new GQL();
-		StringBuilder miscTextBuilder = new StringBuilder();
+		StringBuilder commentsBuilder = new StringBuilder();
 		String comment;
 
 		int cursorIdx = 0; // current cursor in the string
@@ -77,76 +75,66 @@ public class GQL {
 				comment = null;
 
 			int endIdx = str.indexOf('}', cursorIdx);
-			if (str.startsWith(GQLKeyword.ENUM.toString(), cursorIdx)) { // parse enum
+			if (str.startsWith(GQLKeyword.TYPE.toString(), cursorIdx)) { // parse type
 				if (endIdx == -1)
-					throw new InvalidGQLSyntax(GQLEnum.class, str, "There is a '}' missing");
-				gql.dataTypes.add(
-					GQLEnum.parse(str.substring(cursorIdx, endIdx + 1), comment)
-				);
+					throw new InvalidGQLSyntax(GQLInput.class, str, "There is a '}' missing");
+				gql.dataTypes.add(GQLType.parse(str.substring(cursorIdx, endIdx + 1), comment));
 			} else if (str.startsWith(GQLKeyword.INPUT.toString(), cursorIdx)) { // parse input
 				if (endIdx == -1)
 					throw new InvalidGQLSyntax(GQLInput.class, str, "There is a '}' missing");
-				gql.dataTypes.add(
-					GQLInput.parse(str.substring(cursorIdx, endIdx + 1), comment)
-				);
+				gql.dataTypes.add(GQLInput.parse(str.substring(cursorIdx, endIdx + 1), comment));
+			} else if (str.startsWith(GQLKeyword.ENUM.toString(), cursorIdx)) { // parse enum
+				if (endIdx == -1)
+					throw new InvalidGQLSyntax(GQLEnum.class, str, "There is a '}' missing");
+				gql.dataTypes.add(GQLEnum.parse(str.substring(cursorIdx, endIdx + 1), comment));
 			} else if (str.startsWith(GQLKeyword.SCALAR.toString(), cursorIdx)) { // parse scalar
-				endIdx = str.indexOf('\n', cursorIdx);
+				endIdx = lineEndIdx(str, cursorIdx);
+				gql.dataTypes.add(GQLScalar.parse(str.substring(cursorIdx, endIdx), comment));
+			} else if (str.startsWith(GQLKeyword.DIRECTIVE.toString(), cursorIdx)) { // parse directive
+				endIdx = lineEndIdx(str, cursorIdx);
+				gql.dataTypes.add(GQLDirective.parse(str.substring(cursorIdx, endIdx), comment));
+			} else if (str.startsWith(GQLKeyword.SCHEMA.toString(), cursorIdx)) { // parse schema
 				if (endIdx == -1)
-					endIdx = str.length();
-				gql.dataTypes.add(
-					GQLScalar.parse(str.substring(cursorIdx, endIdx), comment)
-				);
-			} else if (str.startsWith(GQLKeyword.TYPE.toString(), cursorIdx)) { // parse type
-				if (endIdx == -1)
-					throw new InvalidGQLSyntax(GQLInput.class, str, "There is a '}' missing");
-				gql.dataTypes.add(
-					GQLType.parse(str.substring(cursorIdx, endIdx + 1), comment)
-				);
+					throw new InvalidGQLSyntax(GQLSchema.class, str, "There is a '}' missing");
+				gql.dataTypes.add(GQLSchema.parse(str.substring(cursorIdx, endIdx + 1), comment));
+			} else if (str.charAt(cursorIdx) == '#') {
+				endIdx = lineEndIdx(str, cursorIdx);
+				commentsBuilder.append(str, cursorIdx, endIdx).append('\n');
 			} else {
-				// move cursor to next keyword
-				// text from i to the index of the next keyword will be miscellaneous text
-
-				// not the most efficient way of doing it, but it should work
-				int commentIdx = str.indexOf(GQL.COMMENT_DELIMITER, cursorIdx);
-				int enumIdx = str.indexOf(GQLKeyword.ENUM.toString(), cursorIdx);
-				int inputIdx = str.indexOf(GQLKeyword.INPUT.toString(), cursorIdx);
-				int scalarIdx = str.indexOf(GQLKeyword.SCALAR.toString(), cursorIdx);
-				int typeIdx = str.indexOf(GQLKeyword.TYPE.toString(), cursorIdx);
-
-				OptionalInt nextKeywordIdx = IntStream.of(
-						commentIdx,
-						enumIdx,
-						inputIdx,
-						scalarIdx,
-						typeIdx
-					)
-					.filter(idx -> idx > -1)
-					.min();
-
-				if (nextKeywordIdx.isEmpty()) // we're probably at the end of the file
-					break;
-
-				endIdx = nextKeywordIdx.getAsInt();
-				miscTextBuilder.append(str, cursorIdx, endIdx);
+				endIdx = lineEndIdx(str, cursorIdx);
+				LOGGER.warning("String \"" + str.substring(cursorIdx, endIdx)
+					+ "\" was not recognized, it'll be ignored");
 			}
 
 			cursorIdx = endIdx + 1;
 		}
 
-		gql.misc = miscTextBuilder.toString();
+		gql.comments = commentsBuilder.toString();
 		return gql;
 	}
 
 	/**
-	 * Move the iterator to the next index in the string that is not a whitespace
+	 * Move the cursor to the next index in the string that is not a whitespace
 	 *
-	 * @param i   the current value of the iterator
+	 * @param i   current value of the cursor
 	 * @param str the string
 	 * @return the next index. {@code Character.isWhitespace(str.charAt(nextIdx))} should be false
 	 */
-	protected static int ignoreWhitespaces(@NotNull String str, int i) {
+	public static int ignoreWhitespaces(@NotNull String str, int i) {
 		for (; i < str.length() && Character.isWhitespace(str.charAt(i)); ++i) ;
 		return i;
+	}
+
+	/**
+	 * Move the cursor to the next line feed or the end of the string
+	 *
+	 * @param str the string
+	 * @param i   current value of the cursor
+	 * @return the index for the next line feed or EOF
+	 */
+	public static int lineEndIdx(@NotNull String str, int i) {
+		i = str.indexOf('\n', i);
+		return i > -1 ? i : str.length();
 	}
 
 	/**
@@ -167,8 +155,13 @@ public class GQL {
 
 	@Override
 	public String toString() {
-		return dataTypes.stream()
+		String dataTypesStr = dataTypes.stream()
 			.map(Object::toString)
 			.collect(Collectors.joining("\n\n"));
+
+		if (comments == null || comments.isBlank())
+			return dataTypesStr;
+
+		return comments + "\n" + dataTypesStr;
 	}
 }

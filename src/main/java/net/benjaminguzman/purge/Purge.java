@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 @CommandLine.Command(
 	name = "purge",
-	description = "Purge a schema. This is done by removing all fields/operations/types whose associated " +
+	description = "Purge a schema. This is done by removing all types/inputs/enums/fields whose associated " +
 		"comments contain a specific text.",
 	mixinStandardHelpOptions = true,
 	version = "gqlfedutils purge 0.1"
@@ -32,8 +32,8 @@ public class Purge implements Runnable {
 
 	@CommandLine.Parameters(
 		paramLabel = "FILE",
-		description = "Input files. If a directory is given instead of a file, all files with 'graphql' " +
-			"extension inside it will be processed. Maximum depth when traversing the directory is 5",
+		description = "Input files. If a directory is given instead of a file, " +
+			"all files inside it will be processed. Maximum depth when traversing the directory is 5",
 		arity = "1..*"
 	)
 	@NotNull
@@ -56,11 +56,13 @@ public class Purge implements Runnable {
 			"keepPatterns: string[]\n" +
 			"secondKeepPatterns: string[]\n\n" +
 			"Description for each field is:\n" +
-			"keepPatterns: All fields/operations/types whose comments do not include any of these " +
+			"keepPatterns: All types/inputs/enums/fields whose comments do not include any of these " +
 			"patterns" +
 			" " +
 			"will be removed.\n" +
-			"secondKeepPatterns: All fields/operations/types whose comments do not include any of these " +
+			"secondKeepPatterns: All types/inputs/enums/fields whose comments do not include any of " +
+			"these" +
+			" " +
 			"patterns in the same line the first pattern was found will be removed",
 		required = true,
 		converter = PurgeConfigConverter.class
@@ -71,7 +73,7 @@ public class Purge implements Runnable {
 		names = {"-s", "--suffix"},
 		description = "Output file(s) will contain that suffix.\n" +
 			"WARNING: if not given, input file will be overwritten. You'll be asked for confirmation\n" +
-			"The suffix is added between the file name and extension, e.g. " +
+			"The suffix is added between the file name and 'graphql' extension (if present), e.g. " +
 			"if input file is 'file.graphql' and '-purged' is the suffix, then the output file will be " +
 			"'file-purged.graphql'"
 	)
@@ -187,8 +189,7 @@ public class Purge implements Runnable {
 				return false;
 
 			// find any second pattern after the first match, but within the same line
-			int lineEndIdx = comment.indexOf('\n', firstMatchIdx + 1);
-			lineEndIdx = lineEndIdx == -1 ? comment.length() : lineEndIdx;
+			int lineEndIdx = GQL.lineEndIdx(comment, firstMatchIdx + 1);
 			String lineOfInterest = comment.substring(firstMatchIdx, lineEndIdx);
 			return secondPatterns.stream().anyMatch(lineOfInterest::contains);
 		});
@@ -202,7 +203,7 @@ public class Purge implements Runnable {
 					return;
 
 				int lineStartIdx = comment.lastIndexOf('\n', firstMatchIdx) + 1;
-				int lineEndIdx = comment.indexOf('\n', lineStartIdx);
+				int lineEndIdx = GQL.lineEndIdx(comment, lineStartIdx);
 				dataType.setComment(
 					comment.substring(0, lineStartIdx) + comment.substring(lineEndIdx + 1)
 				);
@@ -211,8 +212,26 @@ public class Purge implements Runnable {
 
 		List<GQLDataType> purgedGraph = abstractSyntaxGraph.getDataTypes()
 			.stream()
-			.filter(dataType -> dataType.getComment() != null) // data types without comment are removed
-			.filter(dataType -> shouldBeKept.test(dataType.getComment()))
+			.peek(dataType -> {
+				// gql directive and schema are always kept
+				if (dataType.getKeyword() == null)
+					return;
+
+				switch (dataType.getKeyword()) {
+					case DIRECTIVE:
+					case SCHEMA:
+					case SCALAR:
+						String keepComment = firstPatterns.get(0);
+						if (!secondPatterns.isEmpty())
+							keepComment += " " + secondPatterns.get(0);
+
+						if (dataType.getComment() != null)
+							dataType.setComment(keepComment + "\n" + dataType.getComment());
+						else
+							dataType.setComment(keepComment + "\n");
+				}
+			})
+			.filter(dataType -> dataType.getComment() != null && shouldBeKept.test(dataType.getComment()))
 			.peek(removePattern)
 			.collect(Collectors.toList());
 
@@ -248,7 +267,7 @@ public class Purge implements Runnable {
 				file.toAbsolutePath().getParent().toString(),
 				renameFile(file.getFileName().toString())
 			);
-		LOGGER.info("Saving file: " + file);
+		LOGGER.info("Saving " + file + " into " + outFile);
 		try {
 			Files.writeString(outFile, abstractSyntaxGraph + "\n");
 		} catch (IOException e) {
