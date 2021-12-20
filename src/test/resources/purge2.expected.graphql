@@ -70,3 +70,29 @@ type Bout
     """
     date: DateTime! @join__field(graph: BOUTS)
 }
+
+type Query {
+    adminLogin(
+        """
+        Password
+        """
+        password: String!
+
+        """
+        Email or username
+        """
+        user: String!
+    ): String
+
+    editorLogin(
+        """
+        Password
+        """
+        password: String!
+
+        """
+        Email or username
+        """
+        user: String!
+    ): String
+}

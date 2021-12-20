@@ -92,3 +92,35 @@ type Bout
     """
     date: DateTime! @join__field(graph: BOUTS)
 }
+
+type Query {
+    """
+    @GateKeep ADMIN
+    """
+    adminLogin(
+        """
+        Password
+        """
+        password: String!
+
+        """
+        Email or username
+        """
+        user: String!
+    ): String
+
+    """
+    @GateKeep ADMIN
+    """
+    editorLogin(
+        """
+        Password
+        """
+        password: String!
+
+        """
+        Email or username
+        """
+        user: String!
+    ): String
+}
