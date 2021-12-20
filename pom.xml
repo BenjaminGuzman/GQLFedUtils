@@ -42,6 +42,19 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<configuration>
+					<systemProperties>
+						<java.util.logging.SimpleFormatter.format>
+							[%4$-7s] [%1$tT] %5$s %n
+						</java.util.logging.SimpleFormatter.format>
+						<level>ALL</level>
+					</systemProperties>
+				</configuration>
+			</plugin>
+			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<archive>
