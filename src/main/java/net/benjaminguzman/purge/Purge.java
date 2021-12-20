@@ -140,7 +140,7 @@ public class Purge implements Runnable {
 			return true;
 		}
 
-		System.out.print("🚨 Warning: Not providing a suffix will overwrite input files. " +
+		System.out.print("🚨 Warning: Not providing a suffix will overwrite input files.\n" +
 			"Would you like to proceed (Y/n)? ");
 
 		try {
@@ -150,10 +150,7 @@ public class Purge implements Runnable {
 		} catch (IOException ignored) {
 		}
 
-		String msg = CommandLine.Help.Ansi.AUTO.string(
-			"Proceeding... You may want to use @|bold--overwrite|@ next time to save time 😉"
-		);
-		System.out.println(msg);
+		System.out.println("Proceeding... You may want to use --overwrite next time 😉");
 		return true;
 	}
 
