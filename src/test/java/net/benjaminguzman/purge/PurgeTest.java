@@ -20,6 +20,7 @@ class PurgeTest {
 	@AfterAll
 	static void afterEach() throws IOException {
 		Files.deleteIfExists(Path.of("src/test/resources/purge.actual.graphql"));
+		Files.deleteIfExists(Path.of("src/test/resources/purge2.actual.graphql"));
 		Files.deleteIfExists(Path.of("src/test/resources/dir/1.actual.graphql"));
 		Files.deleteIfExists(Path.of("src/test/resources/dir/2.actual.graphql"));
 	}
@@ -62,7 +63,7 @@ class PurgeTest {
 
 	@DisplayName("Testing successful purge single file")
 	@Test
-	void run() throws IOException {
+	void singleSimpleFile() throws IOException {
 		GQLFedUtils app = new GQLFedUtils();
 		CommandLine cmd = new CommandLine(app);
 
@@ -79,6 +80,30 @@ class PurgeTest {
 		// check purged.actual.graphql has been created and contains the same as purge.expected.graphql
 		byte[] expected = Files.readAllBytes(Path.of("src/test/resources/purge.expected.graphql"));
 		byte[] actual = Files.readAllBytes(Path.of("src/test/resources/purge.actual.graphql"));
+		assertArrayEquals(expected, actual);
+
+		assertEquals(0, exitCode);
+	}
+
+	@DisplayName("Testing successful purge single file 2")
+	@Test
+	void singleFile() throws IOException {
+		GQLFedUtils app = new GQLFedUtils();
+		CommandLine cmd = new CommandLine(app);
+
+		StringWriter sw = new StringWriter();
+		cmd.setOut(new PrintWriter(sw));
+
+		int exitCode = cmd.execute(
+			"purge",
+			"--suffix", ".actual",
+			"--config", "src/test/resources/purge2.yaml",
+			"src/test/resources/purge2.graphql"
+		);
+
+		// check purged.actual.graphql has been created and contains the same as purge.expected.graphql
+		byte[] expected = Files.readAllBytes(Path.of("src/test/resources/purge2.expected.graphql"));
+		byte[] actual = Files.readAllBytes(Path.of("src/test/resources/purge2.actual.graphql"));
 		assertArrayEquals(expected, actual);
 
 		assertEquals(0, exitCode);

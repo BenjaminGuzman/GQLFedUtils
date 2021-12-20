@@ -57,27 +57,28 @@ public class GQLField extends GQLDataType {
 	 */
 	public static GQLField parse(@NotNull String str, @Nullable String comment) throws InvalidGQLSyntax {
 		int startIdx = GQL.ignoreWhitespaces(str, 0);
-		int openingParenthesisIdx = str.indexOf('(', startIdx);
-		int closingParenthesisIdx = str.indexOf(')', startIdx);
-		int semicolonIdx = str.lastIndexOf(':');
-		boolean shouldHaveParams = openingParenthesisIdx != -1;
-		if (semicolonIdx == -1 || semicolonIdx < closingParenthesisIdx)
-			// if the semicolon was not found or if it was found within the parameters, field is invalid
-			throw new InvalidGQLSyntax(GQLField.class, str, "It must have a return type");
 
 		// extract the name
-		String name = str.substring(startIdx, shouldHaveParams ? openingParenthesisIdx : semicolonIdx).strip();
+		int endIdx = startIdx + 1;
+		while (str.charAt(endIdx) != '(' && str.charAt(endIdx) != ':') ++endIdx;
+		String name = str.substring(startIdx, endIdx).strip();
 
-		// extract parameters
+		// extract params (if any)
 		String params = null;
-		if (shouldHaveParams) {
-			if (closingParenthesisIdx == -1)
+		if (str.charAt(endIdx) == '(') { // should have params
+			startIdx = endIdx + 1;
+			endIdx = str.indexOf(')', startIdx);
+			if (endIdx == -1)
 				throw new InvalidGQLSyntax(GQLField.class, str, "')' is missing");
-			params = str.substring(openingParenthesisIdx + 1, closingParenthesisIdx).strip();
+			params = str.substring(startIdx, endIdx).strip();
 		}
 
 		// extract return type
-		String returnType = str.substring(semicolonIdx + 1).strip();
+		while (str.charAt(endIdx) != ':') ++endIdx;
+		startIdx = endIdx + 1;
+		endIdx = GQL.lineEndIdx(str, startIdx);
+		assert endIdx > -1;
+		String returnType = str.substring(startIdx, endIdx).strip();
 
 		return new GQLField(name, returnType, comment).setParams(params);
 	}

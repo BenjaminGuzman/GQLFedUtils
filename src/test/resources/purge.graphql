@@ -34,7 +34,9 @@ type GenericNameId {
 This should not be removed
 @GateKeep KEEP ME!
 """
-type BoringType {
+type BoringType
+  @join__owner(graph: USERS)
+{
     """
     @GK TEST
     """
@@ -43,7 +45,13 @@ type BoringType {
     """
     @GK KEEP ME!
     """
-    name: String!
+    name: String! @join__field(graph: USERS)
+
+    """
+    Testing fields with params and rare "return types" are returned
+    @GK KEEP ME!
+    """
+    a(b: String): String! @join__field(graph: USERS)
 }
 
 

@@ -60,8 +60,7 @@ public class GQL {
 		String comment;
 
 		int cursorIdx = 0; // current cursor in the string
-		while (cursorIdx < str.length()) {
-			cursorIdx = ignoreWhitespaces(str, cursorIdx);
+		while ((cursorIdx = ignoreWhitespaces(str, cursorIdx)) < str.length()) {
 			// by now we know the char at i is not a whitespace
 
 			// parse comments
