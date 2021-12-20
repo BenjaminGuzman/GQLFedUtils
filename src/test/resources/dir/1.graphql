@@ -1,0 +1,24 @@
+type T {
+    id: ID!
+}
+
+enum H {
+    A
+    B
+}
+
+"""
+@GK KEEP ME!
+"""
+enum K {
+    """
+    @GK KEEP ME!
+    """
+    A
+    B
+}
+
+"""
+@GK KEEP ME!
+"""
+scalar DateTime

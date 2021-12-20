@@ -20,6 +20,6 @@ import picocli.CommandLine;
 public class GQLFedUtils {
 	public static void main(String... args) {
 		int exitCode = new CommandLine(new GQLFedUtils()).execute(args);
-		System.out.println(exitCode);
+//		System.out.println(exitCode);
 	}
 }

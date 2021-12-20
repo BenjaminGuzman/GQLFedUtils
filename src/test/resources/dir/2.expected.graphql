@@ -1,0 +1,21 @@
+"""
+Testing...
+"""
+enum K {
+    A
+}
+
+"""
+Testing...
+"""
+input O {
+    """
+    Testing...
+    """
+    ll(h: String): [String]!
+}
+
+"""
+Testing...
+"""
+scalar DateTime

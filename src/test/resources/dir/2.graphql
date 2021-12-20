@@ -1,0 +1,39 @@
+type T {
+    id: ID!
+}
+
+enum H {
+    A
+    B
+}
+
+"""
+Testing...
+@GK KEEP ME!
+"""
+enum K {
+    """
+    @GK KEEP ME!
+    """
+    A
+    B
+}
+
+"""
+Testing...
+@GK KEEP ME!
+"""
+input O {
+    """
+    Testing...
+    @GK KEEP ME!
+    """
+    ll(h: String): [String]!
+    B: String!
+}
+
+"""
+Testing...
+@GK KEEP ME!
+"""
+scalar DateTime
