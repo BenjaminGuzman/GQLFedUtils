@@ -1,30 +1,41 @@
 package net.benjaminguzman.purge;
 
+import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 import picocli.CommandLine;
 
+import javax.naming.ConfigurationException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Logger;
+
 public class PurgeConfigConverter implements CommandLine.ITypeConverter<PurgeConfig> {
+	private static final Logger LOGGER = Logger.getLogger(PurgeConfigConverter.class.getName());
+
 	/**
 	 * Converts the specified command line argument value to some domain object.
+	 * More specifically, this reads the given file and parses it to a {@link PurgeConfig} object
 	 *
-	 * @param value the command line argument String value
+	 * @param fileStr the command line argument
 	 * @return the resulting domain object
-	 * @throws Exception               an exception detailing what went wrong during the conversion.
-	 *                                 Any exception thrown from this method will be caught and shown to the end
-	 *                                 user.
-	 *                                 An example error message shown to the end user could look something like
-	 *                                 this:
-	 *                                 {@code Invalid value for option '--some-option': cannot convert
-	 *                                 'xxxinvalidinput' to SomeType (java.lang.IllegalArgumentException: Invalid
-	 *                                 format: must be 'x:y:z' but was 'xxxinvalidinput')}
-	 * @throws CommandLine.TypeConversionException throw this exception to have more control over the error
-	 *                                 message that is shown to the end user when type conversion fails.
-	 *                                 An example message shown to the user could look like this:
-	 *                                 {@code Invalid value for option '--some-option': Invalid format: must be
-	 *                                 'x:y:z' but was 'xxxinvalidinput'}
+	 * @throws IOException            if there was an error when reading the file
+	 * @throws ConfigurationException if the file has an invalid configuration
 	 */
 	@Override
-	public PurgeConfig convert(String value) throws Exception {
-		// TODO load file and create PurgeConfig
-		return null;
+	public PurgeConfig convert(@NotNull String fileStr) throws IOException, ConfigurationException {
+		// read and parse the yaml file
+		try (BufferedReader bufferedReader = Files.newBufferedReader(Path.of(fileStr))) {
+			PurgeConfig config = new Yaml(new Constructor(PurgeConfig.class)).load(bufferedReader);
+			if (config.getKeepPatterns().isEmpty())
+				throw new ConfigurationException(
+					"Configuration file should contain a key named 'keepPatterns'"
+				);
+
+			LOGGER.config("Loaded configuration from " + fileStr + ": " + config);
+			return config;
+		}
 	}
 }

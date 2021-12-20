@@ -1,0 +1,23 @@
+"""
+This should not be removed
+"""
+type BoringType {
+    id: ID!
+
+    name: String!
+}
+
+"""
+The type should not be removed, but some of their fields must be removed
+"""
+type AmazingType {
+    """
+    This should remain untouched
+    """
+    thisShouldBeUntouched: String
+
+    """
+    This should remain untouched
+    """
+    id: ID!
+}

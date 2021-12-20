@@ -1,0 +1,9 @@
+keepPatterns:
+  - "@GK"
+  - "@GateKeep"
+  - "@GKeep"
+
+secondKeepPatterns:
+  - KEEP ME!
+  - .KEEP ME
+  - TEST
