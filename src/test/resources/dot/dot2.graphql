@@ -1,0 +1,76 @@
+schema
+  @core(feature: "https://specs.apollo.dev/core/v0.1"),
+  @core(feature: "https://specs.apollo.dev/join/v0.1")
+{
+  query: Query
+  mutation: Mutation
+}
+
+directive @core(feature: String!) repeatable on SCHEMA
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet) on FIELD_DEFINITION
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet) repeatable on OBJECT | INTERFACE
+
+directive @join__owner(graph: join__Graph!) on OBJECT | INTERFACE
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+enum SuperEnum {
+    SUPERMAN
+    BATMAN
+    IRONMAN
+    ROBOCOP
+    WONDER_WOMAN
+}
+
+type Admin
+  @join__owner(graph: USERS)
+  @join__type(graph: USERS, key: "id")
+{
+  email: String! @join__field(graph: USERS)
+  id: ID! @join__field(graph: USERS)
+  name: String! @join__field(graph: USERS)
+  userSince: DateTime! @join__field(graph: USERS)
+  username: String! @join__field(graph: USERS)
+  super: SuperEnum
+}
+
+input SomethingInput {
+  id: ID!
+  str: String!
+  b: Boolean
+}
+
+type AdminDependant {
+  field: String! @join__field(graph: BOUTS)
+  secondField: Boolean @join__field(graph: BOUTS)
+  admins: [Admin]
+  super: SuperEnum
+}
+
+type Query {
+  adminLogin(
+    password: String!
+    user: String!
+  ): Admin
+
+  adminDep(
+    id: ID!
+  ): AdminDependant
+
+  superHero: SuperEnum
+}
+
+type Mutation {
+  adminUpdate(
+    id: ID!
+    stuff: String!
+    something: SomethingInput!
+  ): Admin
+
+  adminDepUpdate(
+    id: ID!
+    stuff: String!
+  ): AdminDependant
+}

@@ -1,0 +1,71 @@
+type T {
+  id: ID!
+}
+
+enum H {
+  A
+  B
+}
+
+"""
+@GK KEEP ME!
+"""
+enum K {
+  """
+  @GK KEEP ME!
+  """
+  A
+  B
+}
+
+"""
+Scalars should be kept even if they're not annotated
+"""
+scalar DateTime
+
+"""
+Main Query type
+"""
+type Query {
+  """
+  Queries a single hero
+  @GK KEEP ME!
+  """
+  hero: Character
+}
+
+"""@GK KEEP ME!"""
+type Character {
+  """@GK KEEP ME!"""
+  name: String
+
+  """@GK KEEP ME!"""
+  friends: [Character]
+
+  """@GK KEEP ME!"""
+  homeWorld: Planet
+
+  """@GK KEEP ME!"""
+  species: Species
+}
+
+"""@GK KEEP ME!"""
+type Planet {
+  """@GK KEEP ME!"""
+  name: String
+
+  """@GK KEEP ME!"""
+  climate: String
+}
+
+"""@GK KEEP ME!"""
+type Species {
+  """@GK KEEP ME!"""
+  name: String
+
+  """@GK KEEP ME!"""
+  lifespan: Int
+
+  """@GK KEEP ME!"""
+  origin: Planet
+}

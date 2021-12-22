@@ -132,14 +132,14 @@ public class GQLEnum extends GQLDataType {
 			return toString(GQL.DEFAULT_INDENTATION_SIZE, GQL.DEFAULT_INDENTATION_CHAR);
 		}
 
-		/**
-		 * @return A GraphQL specific keyword to tell the GraphQL data type.
-		 * <p>
-		 * It may be null in the case the data is a field
-		 */
 		@Override
 		public @Nullable GQLKeyword getKeyword() {
 			return null;
+		}
+
+		@Override
+		public int hashCode() {
+			return ("enum" + name).hashCode();
 		}
 	}
 }

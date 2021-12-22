@@ -3,6 +3,8 @@ package net.benjaminguzman.parse;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  * Base class to represent a GraphQL data type.
  * <p>
@@ -34,6 +36,14 @@ public abstract class GQLDataType {
 	protected String name;
 
 	/**
+	 * Just a cache for {@link #alphaName()}
+	 * <p>
+	 * It may be null if {@link #alphaName()} has not been called yet
+	 */
+	@Nullable
+	protected String alphaName;
+
+	/**
 	 * @param name    The identifier (name) for the data type, NOT the keyword to tell specifically
 	 *                which data type it is, i.e. NOT input, enum, scalar...
 	 * @param comment Comment associated to the data type. It must not include opening and closing delimiters (""")
@@ -56,7 +66,7 @@ public abstract class GQLDataType {
 	/**
 	 * @return A GraphQL specific keyword to tell the GraphQL data type.
 	 * <p>
-	 * It may be null in the case the data is a field
+	 * It may be null in special cases
 	 */
 	@Nullable
 	public abstract GQLKeyword getKeyword();
@@ -67,11 +77,28 @@ public abstract class GQLDataType {
 	}
 
 	public GQLDataType setComment(@Nullable String comment) {
+		// this conditional seems strange, but it is correct actually
 		if (comment != null && comment.strip().isEmpty())
 			this.comment = null;
 		else
 			this.comment = comment;
 		return this;
+	}
+
+	/**
+	 * Extracts only the alphanumeric part of the name, starting from index 0
+	 *
+	 * @return the substring of {@link #getName()} that consists only of alphanumeric characters
+	 */
+	@NotNull
+	public String alphaName() {
+		if (alphaName != null)
+			return alphaName;
+
+		int nameStartIdx = 0;
+		int nameEndIdx = 0;
+		for (; nameEndIdx < name.length() && Character.isLetterOrDigit(name.charAt(nameEndIdx)); ++nameEndIdx) ;
+		return (alphaName = name.substring(nameStartIdx, nameEndIdx));
 	}
 
 	@NotNull
@@ -121,5 +148,23 @@ public abstract class GQLDataType {
 	protected String indentationHelper(int indentSize, char indentChar) {
 		assert indentSize > 0;
 		return String.valueOf(indentChar).repeat(indentSize);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		GQLDataType other = (GQLDataType) o;
+		return name.equals(other.name) && Objects.equals(getKeyword(), other.getKeyword());
+	}
+
+	/**
+	 * All deriving classes that return {@code null} for {@link #getKeyword()} MUST override this method
+	 */
+	@Override
+	public int hashCode() {
+		if (getKeyword() == null)
+			return name.hashCode();
+		return Objects.hash(getKeyword(), name);
 	}
 }

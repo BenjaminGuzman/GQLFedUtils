@@ -44,10 +44,12 @@ public abstract class GQLStruct extends GQLDataType {
 	 * Comments are delimited by """
 	 *
 	 * @param str string from which fields will be parsed
+	 * @param struct reference to the struct containing the fields that will be parsed
 	 * @return a list of parsed fields
 	 * @throws InvalidGQLSyntax if some field couldn't be parsed because it is invalid
 	 */
-	public static List<GQLField> parseFields(@NotNull String str) throws InvalidGQLSyntax {
+	@NotNull
+	public static List<GQLField> parseFields(@NotNull String str, @NotNull GQLStruct struct) throws InvalidGQLSyntax {
 		String comment;
 		List<GQLField> fields = new ArrayList<>();
 		int cursorIdx = 0;
@@ -64,7 +66,7 @@ public abstract class GQLStruct extends GQLDataType {
 			} else
 				comment = null;
 
-			// extract the name
+			// extract name
 			endIdx = cursorIdx + 1;
 			while (str.charAt(endIdx) != '(' && str.charAt(endIdx) != ':') ++endIdx;
 			String name = str.substring(cursorIdx, endIdx).strip();
@@ -86,7 +88,7 @@ public abstract class GQLStruct extends GQLDataType {
 			assert endIdx > -1;
 			String returnType = str.substring(cursorIdx, endIdx).strip();
 
-			fields.add(new GQLField(name, returnType, comment).setParams(params));
+			fields.add(new GQLField(name, returnType, comment, struct).setParams(params));
 			cursorIdx = endIdx + 1;
 		}
 

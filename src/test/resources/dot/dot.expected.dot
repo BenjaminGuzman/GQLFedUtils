@@ -1,0 +1,37 @@
+graph {
+    # type: Mutation
+    Mutation_1585821862[color=greenyellow, style=filled, label="Mutation"];
+    adminUpdate_322840291[color=snow2, style=filled, label="adminUpdate"];
+    id_1012080429[label="id"];
+    stuff_97101538[label="stuff"];
+    adminUpdate_322840291 -- id_1012080429;
+    adminUpdate_322840291 -- stuff_97101538;
+    Mutation_1585821862 -- adminUpdate_322840291;
+
+    # type: Admin
+    Admin_1841980352[color=greenyellow, style=filled, label="Admin"];
+    email_1225331186[color=snow2, style=filled, label="email"];
+    id_1987916669[color=snow2, style=filled, label="id"];
+    name_2108831581[color=snow2, style=filled, label="name"];
+    userSince_1913859209[color=snow2, style=filled, label="userSince"];
+    username_219615864[color=snow2, style=filled, label="username"];
+    Admin_1841980352 -- email_1225331186;
+    Admin_1841980352 -- id_1987916669;
+    Admin_1841980352 -- name_2108831581;
+    Admin_1841980352 -- userSince_1913859209;
+    Admin_1841980352 -- username_219615864;
+
+    # type: Query
+    Query_1857255737[color=greenyellow, style=filled, label="Query"];
+    adminLogin_1420413869[color=snow2, style=filled, label="adminLogin"];
+    password_1927095391[label="password"];
+    user_887369615[label="user"];
+    adminLogin_1420413869 -- password_1927095391;
+    adminLogin_1420413869 -- user_887369615;
+    Query_1857255737 -- adminLogin_1420413869;
+
+
+    # Connections between types
+    Mutation_1585821862 -- Admin_1841980352;
+    Query_1857255737 -- Admin_1841980352;
+}

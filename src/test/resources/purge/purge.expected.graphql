@@ -9,8 +9,8 @@ schema
 @core(feature: "https://specs.apollo.dev/core/v0.1"),
 @core(feature: "https://specs.apollo.dev/join/v0.1")
 {
-    query: Query
-    mutation: Mutation
+  query: Query
+  mutation: Mutation
 }
 
 directive @core(feature: String!) repeatable on SCHEMA
@@ -28,27 +28,27 @@ This should not be removed
 """
 type BoringType
   @join__owner(graph: USERS) {
-    id: ID!
+  id: ID!
 
-    name: String! @join__field(graph: USERS)
+  name: String! @join__field(graph: USERS)
 
-    """
-    Testing fields with params and rare "return types" are returned
-    """
-    a(b: String): String! @join__field(graph: USERS)
+  """
+  Testing fields with params and rare "return types" are returned
+  """
+  a(b: String): String! @join__field(graph: USERS)
 }
 
 """
 The type should not be removed, but some of their fields must be removed
 """
 type AmazingType {
-    """
-    This should remain untouched
-    """
-    thisShouldBeUntouched: String
+  """
+  This should remain untouched
+  """
+  thisShouldBeUntouched: String
 
-    """
-    This should remain untouched
-    """
-    id: ID!
+  """
+  This should remain untouched
+  """
+  id: ID!
 }

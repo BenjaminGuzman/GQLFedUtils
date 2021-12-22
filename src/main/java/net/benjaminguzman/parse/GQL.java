@@ -6,8 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -23,10 +22,16 @@ public class GQL {
 	public static final String COMMENT_DELIMITER = "\"\"\"";
 
 	public static final char DEFAULT_INDENTATION_CHAR = ' ';
-	public static final int DEFAULT_INDENTATION_SIZE = 4;
+	public static final int DEFAULT_INDENTATION_SIZE = 2;
 
 	@NotNull
 	private List<GQLDataType> dataTypes = new ArrayList<>();
+
+	/**
+	 * Same as {@link #dataTypes} but as a graph (adjacency list)
+	 */
+	@Nullable
+	private Map<GQLDataType, List<GQLDataType>> adjList;
 
 	/**
 	 * Comments indicated with '#'
@@ -134,6 +139,63 @@ public class GQL {
 	public static int lineEndIdx(@NotNull String str, int i) {
 		i = str.indexOf('\n', i);
 		return i > -1 ? i : str.length();
+	}
+
+	/**
+	 * Resolves name references in types and inputs to construct a graph
+	 * <p>
+	 * Calling multiple times this method has no performance overhead since internally
+	 * the constructed graph is cached
+	 *
+	 * @return the graph as an adjacency list
+	 */
+	public Map<GQLDataType, List<GQLDataType>> getGraph() {
+		if (dataTypes.isEmpty())
+			return Collections.emptyMap();
+
+		// if there are no nodes, or the graph has been constructed do nothing
+		if (adjList != null) // we've already computed the graph
+			return adjList;
+
+		// initialize vertices
+		adjList = new HashMap<>();
+		for (GQLDataType dataType : dataTypes)
+			adjList.put(dataType, Collections.emptyList());
+
+		// map to allow fast access to each gql data type by its name
+		Map<String, GQLDataType> mapNameType = new HashMap<>();
+		for (GQLDataType dataType : dataTypes)
+			mapNameType.put(dataType.alphaName(), dataType);
+
+		// add edges
+		dataTypes.stream()
+			// input and type are the only ones that can have reference to other vertices
+			.filter(dataType -> dataType instanceof GQLStruct)
+			.map(dataType -> (GQLStruct) dataType)
+			.forEach(struct -> { // add edges
+				// get all referenced types in parameters
+				// use set to prevent duplicate references
+				Set<GQLDataType> referencedVertices = struct.getFields()
+					.stream()
+					.map(GQLField::getParams)
+					.flatMap(List::stream)
+					.map(fieldParam -> fieldParam.getType(true))
+					.map(mapNameType::get)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+
+				// get all referenced types by return type
+				struct.getFields()
+					.stream()
+					.map(field -> field.getReturnType(true))
+					.map(mapNameType::get)
+					.filter(Objects::nonNull)
+					.forEach(referencedVertices::add);
+
+				adjList.put(struct, new ArrayList<>(referencedVertices));
+			});
+
+		return adjList;
 	}
 
 	/**
