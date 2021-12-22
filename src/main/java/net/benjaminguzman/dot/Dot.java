@@ -105,6 +105,7 @@ public class Dot implements Runnable {
 		if (inputFile.equals(outputFile))
 			if (!GQLFedUtils.shouldProceed("Input and output files are the same"))
 				return;
+		outputFile = GQLFedUtils.askAltOut(outputFile);
 
 		LOGGER.info("Processing " + inputFile);
 		Map<GQLDataType, List<GQLDataType>> adjList;
