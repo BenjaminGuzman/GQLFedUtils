@@ -1,8 +1,0 @@
-enum K {
-    A
-}
-
-"""
-Scalars should be kept even if they're not annotated
-"""
-scalar DateTime

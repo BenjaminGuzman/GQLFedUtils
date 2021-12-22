@@ -5,17 +5,17 @@
 Testing...
 """
 enum K {
-    A
+  A
 }
 
 """
 Testing...
 """
 input O {
-    """
-    Testing...
-    """
-    ll(h: String): [String]!
+  """
+  Testing...
+  """
+  ll(h: String): [String]!
 }
 
 """

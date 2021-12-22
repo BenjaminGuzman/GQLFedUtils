@@ -1,15 +1,13 @@
 package net.benjaminguzman.purge;
 
+import net.benjaminguzman.GQLFedUtils;
 import net.benjaminguzman.parse.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import picocli.CommandLine;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -30,24 +28,14 @@ import java.util.stream.Stream;
 public class Purge implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Purge.class.getName());
 
-	@CommandLine.Parameters(
-		paramLabel = "FILE",
-		description = "Input files. If a directory is given instead of a file, " +
-			"all files inside it will be processed. Maximum depth when traversing the directory is 5",
-		arity = "1..*"
-	)
-	@NotNull
-	private final List<File> inputFiles = Collections.emptyList();
-
 	@CommandLine.Option(
 		names = {"-e", "--exclude"},
 		description = "List of files to exclude from processing. " +
 			"Exclusion files have more precedence than input files, i.e. if you provide the same file as" +
-			" " +
-			"input and exclusion, it'll be excluded"
+			" input and exclusion, it'll be excluded"
 	)
 	@NotNull
-	private final List<File> excludeFiles = Collections.emptyList();
+	private final List<Path> excludeFiles = Collections.emptyList();
 
 	@CommandLine.Option(
 		names = {"-c", "--config"},
@@ -57,13 +45,9 @@ public class Purge implements Runnable {
 			"secondKeepPatterns: string[]\n\n" +
 			"Description for each field is:\n" +
 			"keepPatterns: All types/inputs/enums/fields whose comments do not include any of these " +
-			"patterns" +
-			" " +
-			"will be removed.\n" +
+			"patterns will be removed.\n" +
 			"secondKeepPatterns: All types/inputs/enums/fields whose comments do not include any of " +
-			"these" +
-			" " +
-			"patterns in the same line the first pattern was found will be removed",
+			"these patterns in the same line the first pattern was found will be removed",
 		required = true,
 		converter = PurgeConfigConverter.class
 	)
@@ -83,9 +67,18 @@ public class Purge implements Runnable {
 	@CommandLine.Option(
 		names = {"--overwrite"},
 		description = "If --suffix is not given, you'll be asked for confirmation to overwrite input files. " +
-			"Set this flag to confirm your decision in advance so you won't be asked later"
+			"Set this flag to confirm your decision in advance, so you won't be asked later"
 	)
 	private boolean hasConfirmedOverwrite;
+
+	@CommandLine.Parameters(
+		paramLabel = "FILE",
+		description = "Input files. If a directory is given instead of a file, " +
+			"all files inside it will be processed. Maximum depth when traversing the directory is 5",
+		arity = "1..*"
+	)
+	@NotNull
+	private final List<Path> inputFiles = Collections.emptyList();
 
 	public Purge() {
 	}
@@ -103,17 +96,17 @@ public class Purge implements Runnable {
 		// process all input files with exclusions
 		inputFiles.stream()
 			.peek(file -> {
-				if (!file.exists())
+				if (!Files.exists(file))
 					LOGGER.warning(file + " doesn't exist, skipping.");
 			})
-			.filter(File::exists) // just work with files that do exist
+			.filter(Files::exists) // just work with files that do exist
 			.flatMap(file -> { // "unpack" directories
-				if (file.isFile())
-					return Stream.of(file.toPath());
+				if (Files.isRegularFile(file))
+					return Stream.of(file);
 
 				// if file is directory, traverse it and consider exclusions
 				try {
-					return Files.walk(file.toPath(), 5)
+					return Files.walk(file, 5)
 						.filter(p -> p.toFile().isFile() && excludeFiles.stream().noneMatch(
 							// this is a naive criteria to exclude files,
 							// but it is ok for now
@@ -140,15 +133,8 @@ public class Purge implements Runnable {
 			return true;
 		}
 
-		System.out.print("🚨 Warning: Not providing a suffix will overwrite input files.\n" +
-			"Would you like to proceed (Y/n)? ");
-
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			if (!"Y".equals(reader.readLine().strip()))
-				return false;
-		} catch (IOException ignored) {
-		}
+		if (!GQLFedUtils.shouldProceed("Not providing a suffix will overwrite input files"))
+			return false;
 
 		System.out.println("Proceeding... You may want to use --overwrite next time 😉");
 		return true;
@@ -157,7 +143,7 @@ public class Purge implements Runnable {
 	/**
 	 * Purges and saves a single file
 	 * <p>
-	 * The output file is determined with {@link #outSuffix} and {@link #renameFile(String)}
+	 * The output file is determined with {@link #outSuffix} and {@link #outputFileWSuffix(Path)}
 	 *
 	 * @param file the file to be purged
 	 */
@@ -169,10 +155,10 @@ public class Purge implements Runnable {
 		try {
 			abstractSyntaxGraph = GQL.from(file);
 		} catch (IOException e) {
-			LOGGER.severe("Error while reading file " + file.toAbsolutePath() + ". " + e.getMessage());
+			LOGGER.severe("😭 Error while reading file " + file.toAbsolutePath() + ". " + e.getMessage());
 			return;
 		} catch (InvalidGQLSyntax e) {
-			LOGGER.severe("Couldn't parse file " + file.toAbsolutePath() + ". " + e.getMessage());
+			LOGGER.severe("😭 Couldn't parse file " + file.toAbsolutePath() + ". " + e.getMessage());
 			return;
 		}
 
@@ -199,10 +185,11 @@ public class Purge implements Runnable {
 				if (firstMatchIdx == -1)
 					return;
 
+				// this right even if lastIndexOf returns -1
 				int lineStartIdx = comment.lastIndexOf('\n', firstMatchIdx) + 1;
-				int lineEndIdx = GQL.lineEndIdx(comment, lineStartIdx);
+				int lineEndIdx = Math.min(GQL.lineEndIdx(comment, lineStartIdx) + 1, comment.length());
 				dataType.setComment(
-					comment.substring(0, lineStartIdx) + comment.substring(lineEndIdx + 1)
+					comment.substring(0, lineStartIdx) + comment.substring(lineEndIdx)
 				);
 			});
 		};
@@ -216,10 +203,13 @@ public class Purge implements Runnable {
 
 				switch (dataType.getKeyword()) {
 					case TYPE:
-						// Query type should always be kept
-						if (!dataType.getName().equals("Query"))
+						// Query and Mutation types should always be kept
+						String typeName = dataType.getName();
+						if (!typeName.equals("Query") && !typeName.equals("Mutation"))
 							return;
-						// yes, don't use break here. We need to keep the Query type
+						// yes, don't use break here. We need to keep Query and Mutation types
+						// TODO but don't add keep comment if it already has it
+						//  usually this isn't the case so won't add more code
 					case DIRECTIVE:
 					case SCHEMA:
 					case SCALAR:
@@ -265,16 +255,14 @@ public class Purge implements Runnable {
 		// Now that the graph is completely purged, we just need to reconstruct the graphql file
 		Path outFile = file;
 		if (outSuffix != null)
-			outFile = Path.of(
-				file.toAbsolutePath().getParent().toString(),
-				renameFile(file.getFileName().toString())
-			);
-		LOGGER.info("Saving " + file + " into " + outFile);
+			outFile = outputFileWSuffix(file);
+		LOGGER.info("Saving output in " + outFile);
 		try {
 			Files.writeString(outFile, abstractSyntaxGraph + "\n");
 		} catch (IOException e) {
-			LOGGER.severe("Error while trying to save file " + outFile.toAbsolutePath() + ". "
+			LOGGER.severe("😭 Error while trying to save file " + outFile.toAbsolutePath() + ". "
 				+ e.getMessage());
+			LOGGER.info("But, here is the output:\n" + abstractSyntaxGraph);
 		}
 	}
 
@@ -282,17 +270,20 @@ public class Purge implements Runnable {
 	 * Replaces the name "*.graphql" with "*{@link #outSuffix}.graphql"
 	 * <p>
 	 * If the file name doesn't have ".graphql", {@link #outSuffix} is added at the end of the string
+	 * <p>
+	 * For example if the original file name is "dir/graph.graphql" and {@link #outSuffix} is ".out",
+	 * Then the returned path name will be "dir/graph.out.graphql"
 	 *
-	 * @param name original file name
-	 * @return a modified string
+	 * @param path original path
+	 * @return an instance of {@link Path} with name as specified above
 	 */
 	@NotNull
-	private String renameFile(@NotNull String name) {
-		boolean containsGraphql = name.contains(".graphql");
-		if (containsGraphql)
-			return name.replace(".graphql", outSuffix + ".graphql");
+	private Path outputFileWSuffix(@NotNull Path path) {
+		String pathStr = path.toString();
+		if (pathStr.endsWith(".graphql"))
+			return Path.of(pathStr.substring(0, pathStr.lastIndexOf(".graphql")) + outSuffix + ".graphql");
 
-		return name + outSuffix;
+		return Path.of(path + outSuffix);
 	}
 
 	/**
@@ -323,7 +314,7 @@ public class Purge implements Runnable {
 	 * Call from testing code only
 	 */
 	@TestOnly
-	public @NotNull List<File> getInputFiles() {
+	public @NotNull List<Path> getInputFiles() {
 		return inputFiles;
 	}
 
@@ -331,7 +322,7 @@ public class Purge implements Runnable {
 	 * Call from testing code only
 	 */
 	@TestOnly
-	public @NotNull List<File> getExcludeFiles() {
+	public @NotNull List<Path> getExcludeFiles() {
 		return excludeFiles;
 	}
 }

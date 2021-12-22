@@ -45,7 +45,8 @@ public class GQLInput extends GQLStruct {
 		if (closingBraceIdx == -1)
 			throw new InvalidGQLSyntax(GQLInput.class, str, "'}' is missing");
 
-		gqlInput.setFields(GQLInput.parseFields(str.substring(openingBraceIdx + 1, closingBraceIdx)));
+		gqlInput.setFields(GQLInput.parseFields(str.substring(openingBraceIdx + 1, closingBraceIdx),
+			gqlInput));
 		return gqlInput;
 	}
 

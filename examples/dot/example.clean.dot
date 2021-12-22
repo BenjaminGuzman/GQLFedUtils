@@ -1,0 +1,45 @@
+graph {
+    # type: Query
+    Query_158033020[color=greenyellow, style=filled, label="Query"];
+    hero_849443759[color=snow2, style=filled, label="hero"];
+    planets_563031252[color=snow2, style=filled, label="planets"];
+    Query_158033020 -- hero_849443759;
+    Query_158033020 -- planets_563031252;
+
+    # type: Character
+    Character_963228187[color=greenyellow, style=filled, label="Character"];
+    name_507838526[color=snow2, style=filled, label="name"];
+    friends_535978454[color=snow2, style=filled, label="friends"];
+    homeWorld_1222655199[color=snow2, style=filled, label="homeWorld"];
+    Character_963228187 -- name_507838526;
+    Character_963228187 -- friends_535978454;
+    Character_963228187 -- homeWorld_1222655199;
+
+    # enum: PlanetType
+    PlanetType_786543134[color=mediumpurple1, style=filled, label="PlanetType"];
+
+    # type: Mutation
+    Mutation_693856677[color=greenyellow, style=filled, label="Mutation"];
+    updateCharacter_2104829072[color=snow2, style=filled, label="updateCharacter"];
+    updatePlanet_689879595[color=snow2, style=filled, label="updatePlanet"];
+    Mutation_693856677 -- updateCharacter_2104829072;
+    Mutation_693856677 -- updatePlanet_689879595;
+
+    # type: Planet
+    Planet_2138320748[color=greenyellow, style=filled, label="Planet"];
+    name_1718997747[color=snow2, style=filled, label="name"];
+    climate_762104039[color=snow2, style=filled, label="climate"];
+    type_1235389826[color=snow2, style=filled, label="type"];
+    Planet_2138320748 -- name_1718997747;
+    Planet_2138320748 -- climate_762104039;
+    Planet_2138320748 -- type_1235389826;
+
+
+    # Connections between types
+    Query_158033020 -- Character_963228187;
+    Query_158033020 -- Planet_2138320748;
+    Character_963228187 -- Character_963228187;
+    Character_963228187 -- Planet_2138320748;
+    Mutation_693856677 -- Planet_2138320748;
+    Planet_2138320748 -- PlanetType_786543134;
+}

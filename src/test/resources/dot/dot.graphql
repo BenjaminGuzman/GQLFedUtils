@@ -1,0 +1,21 @@
+type Admin {
+  email: String! @join__field(graph: USERS)
+  id: ID! @join__field(graph: USERS)
+  name: String! @join__field(graph: USERS)
+  userSince: DateTime! @join__field(graph: USERS)
+  username: String! @join__field(graph: USERS)
+}
+
+type Query {
+  adminLogin(
+    password: String!
+    user: String!
+  ): Admin
+}
+
+type Mutation {
+  adminUpdate(
+    id: ID!
+    stuff: String!
+  ): Admin
+}

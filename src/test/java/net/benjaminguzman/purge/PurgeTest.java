@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -14,15 +13,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class PurgeTest {
 	@AfterAll
 	static void afterEach() throws IOException {
-		Files.deleteIfExists(Path.of("src/test/resources/purge.actual.graphql"));
-		Files.deleteIfExists(Path.of("src/test/resources/purge2.actual.graphql"));
-		Files.deleteIfExists(Path.of("src/test/resources/dir/1.actual.graphql"));
-		Files.deleteIfExists(Path.of("src/test/resources/dir/2.actual.graphql"));
+		Files.deleteIfExists(Path.of("src/test/resources/purge/purge.actual.graphql"));
+		Files.deleteIfExists(Path.of("src/test/resources/purge/purge2.actual.graphql"));
+		Files.deleteIfExists(Path.of("src/test/resources/purge/dir/1.actual.graphql"));
+		Files.deleteIfExists(Path.of("src/test/resources/purge/dir/2.actual.graphql"));
 	}
 
 	@DisplayName("Testing CLI parsing --suffix, --config, input files, exclude files")
@@ -37,10 +37,10 @@ class PurgeTest {
 		int exitCode = cmd.execute(
 			"purge",
 			"--suffix", ".actual",
-			"--config", "src/test/resources/purge.ok.yaml",
+			"--config", "src/test/resources/purge/purge.ok.yaml",
 			"--exclude", "node_modules",
-			"--exclude", "src/test/resources/purge.expected.graphql",
-			"src/test/resources/purge.graphql"
+			"--exclude", "src/test/resources/purge/purge.expected.graphql",
+			"src/test/resources/purge/purge.graphql"
 		);
 		Purge purger = cmd.getSubcommands().get("purge").getCommand();
 
@@ -52,10 +52,10 @@ class PurgeTest {
 		assertEquals(List.of("@GK", "@GateKeep", "@GKeep"), config.getKeepPatterns());
 		assertEquals(List.of("KEEP ME!", ".KEEP ME", "TEST"), config.getSecondKeepPatterns());
 
-		assertEquals(List.of(new File("src/test/resources/purge.graphql")), purger.getInputFiles());
+		assertEquals(List.of(Path.of("src/test/resources/purge/purge.graphql")), purger.getInputFiles());
 
 		assertEquals(List.of(
-			new File("node_modules"), new File("src/test/resources/purge.expected.graphql")
+			Path.of("node_modules"), Path.of("src/test/resources/purge/purge.expected.graphql")
 		), purger.getExcludeFiles());
 
 		assertEquals(0, exitCode);
@@ -73,14 +73,14 @@ class PurgeTest {
 		int exitCode = cmd.execute(
 			"purge",
 			"--suffix", ".actual",
-			"--config", "src/test/resources/purge.ok.yaml",
-			"src/test/resources/purge.graphql"
+			"--config", "src/test/resources/purge/purge.ok.yaml",
+			"src/test/resources/purge/purge.graphql"
 		);
 
-		// check purged.actual.graphql has been created and contains the same as purge.expected.graphql
-		byte[] expected = Files.readAllBytes(Path.of("src/test/resources/purge.expected.graphql"));
-		byte[] actual = Files.readAllBytes(Path.of("src/test/resources/purge.actual.graphql"));
-		assertArrayEquals(expected, actual);
+		// check purge.actual.graphql has been created and contains the same as purge.expected.graphql
+		String expected = Files.readString(Path.of("src/test/resources/purge/purge.expected.graphql"));
+		String actual = Files.readString(Path.of("src/test/resources/purge/purge.actual.graphql"));
+		assertEquals(expected, actual);
 
 		assertEquals(0, exitCode);
 	}
@@ -97,14 +97,14 @@ class PurgeTest {
 		int exitCode = cmd.execute(
 			"purge",
 			"--suffix", ".actual",
-			"--config", "src/test/resources/purge2.yaml",
-			"src/test/resources/purge2.graphql"
+			"--config", "src/test/resources/purge/purge2.yaml",
+			"src/test/resources/purge/purge2.graphql"
 		);
 
-		// check purged.actual.graphql has been created and contains the same as purge.expected.graphql
-		byte[] expected = Files.readAllBytes(Path.of("src/test/resources/purge2.expected.graphql"));
-		byte[] actual = Files.readAllBytes(Path.of("src/test/resources/purge2.actual.graphql"));
-		assertArrayEquals(expected, actual);
+		// check purge.actual.graphql has been created and contains the same as purge.expected.graphql
+		String expected = Files.readString(Path.of("src/test/resources/purge/purge2.expected.graphql"));
+		String actual = Files.readString(Path.of("src/test/resources/purge/purge2.actual.graphql"));
+		assertEquals(expected, actual);
 
 		assertEquals(0, exitCode);
 	}
@@ -121,36 +121,34 @@ class PurgeTest {
 		int exitCode = cmd.execute(
 			"purge",
 			"--suffix", ".actual",
-			"--config", "src/test/resources/purge.ok.yaml",
-			"--exclude", "src/test/resources/dir/1.expected.graphql",
-			"--exclude", "src/test/resources/dir/1.actual.graphql",
-			"--exclude", "src/test/resources/dir/2.expected.graphql",
-			"--exclude", "src/test/resources/dir/2.actual.graphql",
-			"src/test/resources/purge.graphql", "src/test/resources/dir"
+			"--config", "src/test/resources/purge/purge.ok.yaml",
+			"--exclude", "src/test/resources/purge/dir/1.expected.graphql",
+			"--exclude", "src/test/resources/purge/dir/1.actual.graphql",
+			"--exclude", "src/test/resources/purge/dir/2.expected.graphql",
+			"--exclude", "src/test/resources/purge/dir/2.actual.graphql",
+			"src/test/resources/purge/purge.graphql", "src/test/resources/purge/dir"
 		);
 
-		// check purged.actual.graphql has been created and contains the same as purge.expected.graphql
-		assertArrayEquals(
-			Files.readAllBytes(Path.of("src/test/resources/purge.expected.graphql")),
-			Files.readAllBytes(Path.of("src/test/resources/purge.actual.graphql"))
+		// check purge.actual.graphql has been created and contains the same as purge.expected.graphql
+		assertEquals(
+			Files.readString(Path.of("src/test/resources/purge/purge.expected.graphql")),
+			Files.readString(Path.of("src/test/resources/purge/purge.actual.graphql"))
 		);
 
 		// check files within directory are OK
-		assertArrayEquals(
-			Files.readAllBytes(Path.of("src/test/resources/dir/1.expected.graphql")),
-			Files.readAllBytes(Path.of("src/test/resources/dir/1.actual.graphql"))
+		assertEquals(
+			Files.readString(Path.of("src/test/resources/purge/dir/1.expected.graphql")),
+			Files.readString(Path.of("src/test/resources/purge/dir/1.actual.graphql"))
 		);
-		assertArrayEquals(
-			Files.readAllBytes(Path.of("src/test/resources/dir/2.expected.graphql")),
-			Files.readAllBytes(Path.of("src/test/resources/dir/2.actual.graphql"))
+		assertEquals(
+			Files.readString(Path.of("src/test/resources/purge/dir/2.expected.graphql")),
+			Files.readString(Path.of("src/test/resources/purge/dir/2.actual.graphql"))
 		);
 
 		// check exclusion worked
-		assertFalse(Files.exists(Path.of("src/test/resources/dir/1.expected.actual.graphql")));
-		assertFalse(Files.exists(Path.of("src/test/resources/dir/2.expected.actual.graphql")));
+		assertFalse(Files.exists(Path.of("src/test/resources/purge/dir/1.expected.actual.graphql")));
+		assertFalse(Files.exists(Path.of("src/test/resources/purge/dir/2.expected.actual.graphql")));
 
-		// TODO test miscellaneous text
-		// TODO add graphql to dot code conversion
 		assertEquals(0, exitCode);
 	}
 }

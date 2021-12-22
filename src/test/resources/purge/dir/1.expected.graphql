@@ -1,0 +1,42 @@
+enum K {
+  A
+}
+
+"""
+Scalars should be kept even if they're not annotated
+"""
+scalar DateTime
+
+"""
+Main Query type
+"""
+type Query {
+  """
+  Queries a single hero
+  """
+  hero: Character
+}
+
+type Character {
+  name: String
+
+  friends: [Character]
+
+  homeWorld: Planet
+
+  species: Species
+}
+
+type Planet {
+  name: String
+
+  climate: String
+}
+
+type Species {
+  name: String
+
+  lifespan: Int
+
+  origin: Planet
+}

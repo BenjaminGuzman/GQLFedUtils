@@ -1,0 +1,75 @@
+"""Main Query type"""
+type Query {
+  """
+  Queries a single hero
+  @Keep KEEP_FOR_DEMO
+  """
+  hero: Character
+}
+
+"""@Keep KEEP_FOR_DEMO"""
+type Character {
+  """@Keep KEEP_FOR_DEMO"""
+  name: String
+
+  """@Keep KEEP_FOR_DEMO"""
+  friends: [Character]
+
+  """@Keep KEEP_FOR_DEMO"""
+  homeWorld: Planet
+
+  """@Keep KEEP_FOR_DEMO"""
+  species: Species
+}
+
+"""@Keep KEEP_FOR_DEMO"""
+type Planet {
+  """@Keep KEEP_FOR_DEMO"""
+  name: String
+
+  """@Keep KEEP_FOR_DEMO"""
+  climate: String
+}
+
+"""@Keep KEEP_FOR_DEMO"""
+type Species {
+  """@Keep KEEP_FOR_DEMO"""
+  name: String
+
+  """@Keep KEEP_FOR_DEMO"""
+  lifespan: Int
+
+  """@Keep KEEP_FOR_DEMO"""
+  origin: Planet
+}
+
+"""
+This will be removed 'cause it is not annotated,
+even though some of its fields are annotated.
+This is because removing types has more precedence than removing fields
+"""
+type Removed {
+  """@Keep KEEP_FOR_DEMO"""
+  name: String
+
+  """@Keep KEEP_FOR_DEMO"""
+  origin: Planet
+}
+
+"""
+@Keep KEEP_FOR_DEMO
+"""
+type Extra {
+  """
+  This should also be removed 'cause it is not annotated
+  with any second keep pattern
+  @Keep DON'T REMOVE PLEASE
+  """
+  name: String
+
+  """
+  Notice this comment is not removed, but the annotation is
+  @Keep KEEP_FOR_DEMO
+  """
+  origin: Planet
+}

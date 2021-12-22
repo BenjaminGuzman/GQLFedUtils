@@ -1,0 +1,93 @@
+graph {
+    # type: Mutation
+    Mutation_1585821862[color=greenyellow, style=filled, label="Mutation"];
+    adminUpdate_2033924942[color=snow2, style=filled, label="adminUpdate"];
+    id_391543492[label="id"];
+    stuff_1500725459[label="stuff"];
+    something_1892771304[label="something"];
+    adminUpdate_2033924942 -- id_391543492;
+    adminUpdate_2033924942 -- stuff_1500725459;
+    adminUpdate_2033924942 -- something_1892771304;
+    adminDepUpdate_2100153903[color=snow2, style=filled, label="adminDepUpdate"];
+    id_386522247[label="id"];
+    stuff_1495704214[label="stuff"];
+    adminDepUpdate_2100153903 -- id_386522247;
+    adminDepUpdate_2100153903 -- stuff_1495704214;
+    Mutation_1585821862 -- adminUpdate_2033924942;
+    Mutation_1585821862 -- adminDepUpdate_2100153903;
+
+    # type: Admin
+    Admin_1225025013[color=greenyellow, style=filled, label="Admin"];
+    email_720415139[color=snow2, style=filled, label="email"];
+    id_42170344[color=snow2, style=filled, label="id"];
+    name_240389390[color=snow2, style=filled, label="name"];
+    userSince_31887116[color=snow2, style=filled, label="userSince"];
+    username_1726130461[color=snow2, style=filled, label="username"];
+    super_1138761421[color=snow2, style=filled, label="super"];
+    Admin_1225025013 -- email_720415139;
+    Admin_1225025013 -- id_42170344;
+    Admin_1225025013 -- name_240389390;
+    Admin_1225025013 -- userSince_31887116;
+    Admin_1225025013 -- username_1726130461;
+    Admin_1225025013 -- super_1138761421;
+
+    # enum: SuperEnum
+    SuperEnum_1837966991[color=mediumpurple1, style=filled, label="SuperEnum"];
+    SUPERMAN_1795640320[label="SUPERMAN"];
+    BATMAN_1968359066[label="BATMAN"];
+    IRONMAN_1510088529[label="IRONMAN"];
+    ROBOCOP_809814457[label="ROBOCOP"];
+    WONDER_1542910303[label="WONDER_WOMAN"];
+    SuperEnum_1837966991 -- SUPERMAN_1795640320;
+    SuperEnum_1837966991 -- BATMAN_1968359066;
+    SuperEnum_1837966991 -- IRONMAN_1510088529;
+    SuperEnum_1837966991 -- ROBOCOP_809814457;
+    SuperEnum_1837966991 -- WONDER_1542910303;
+
+    # type: AdminDependant
+    AdminDependant_1943666205[color=greenyellow, style=filled, label="AdminDependant"];
+    field_843677816[color=snow2, style=filled, label="field"];
+    secondField_639602196[color=snow2, style=filled, label="secondField"];
+    admins_2026363799[color=snow2, style=filled, label="admins"];
+    super_1941801893[color=snow2, style=filled, label="super"];
+    AdminDependant_1943666205 -- field_843677816;
+    AdminDependant_1943666205 -- secondField_639602196;
+    AdminDependant_1943666205 -- admins_2026363799;
+    AdminDependant_1943666205 -- super_1941801893;
+
+    # type: Query
+    Query_1857255737[color=greenyellow, style=filled, label="Query"];
+    adminLogin_1420413869[color=snow2, style=filled, label="adminLogin"];
+    password_1927095391[label="password"];
+    user_887369615[label="user"];
+    adminLogin_1420413869 -- password_1927095391;
+    adminLogin_1420413869 -- user_887369615;
+    adminDep_189548957[color=snow2, style=filled, label="adminDep"];
+    id_1767715155[label="id"];
+    adminDep_189548957 -- id_1767715155;
+    superHero_299981009[color=snow2, style=filled, label="superHero"];
+    Query_1857255737 -- adminLogin_1420413869;
+    Query_1857255737 -- adminDep_189548957;
+    Query_1857255737 -- superHero_299981009;
+
+    # input: SomethingInput
+    SomethingInput_980876025[color=lightskyblue, style=filled, label="SomethingInput"];
+    id_172038843[color=snow2, style=filled, label="id"];
+    str_581071257[color=snow2, style=filled, label="str"];
+    b_571121216[color=snow2, style=filled, label="b"];
+    SomethingInput_980876025 -- id_172038843;
+    SomethingInput_980876025 -- str_581071257;
+    SomethingInput_980876025 -- b_571121216;
+
+
+    # Connections between types
+    Mutation_1585821862 -- Admin_1225025013;
+    Mutation_1585821862 -- AdminDependant_1943666205;
+    Mutation_1585821862 -- SomethingInput_980876025;
+    Admin_1225025013 -- SuperEnum_1837966991;
+    AdminDependant_1943666205 -- Admin_1225025013;
+    AdminDependant_1943666205 -- SuperEnum_1837966991;
+    Query_1857255737 -- Admin_1225025013;
+    Query_1857255737 -- SuperEnum_1837966991;
+    Query_1857255737 -- AdminDependant_1943666205;
+}

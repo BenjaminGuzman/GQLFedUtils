@@ -45,7 +45,7 @@ public class GQLType extends GQLStruct {
 		if (closingBraceIdx == -1)
 			throw new InvalidGQLSyntax(GQLType.class, str, "'}' is missing");
 
-		gqlType.setFields(GQLType.parseFields(str.substring(openingBraceIdx + 1, closingBraceIdx)));
+		gqlType.setFields(GQLType.parseFields(str.substring(openingBraceIdx + 1, closingBraceIdx), gqlType));
 		return gqlType;
 	}
 

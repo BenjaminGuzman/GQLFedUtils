@@ -1,0 +1,35 @@
+type Query {
+  hero(id: ID!): Character
+  planets: [Planet]
+}
+
+type Mutation {
+  updateCharacter(
+    id: ID!,
+    friends: [Character!],
+  ): Characters
+
+  updatePlanet(name: String!, climate: String!): Planet
+}
+
+"""
+See https://exoplanets.nasa.gov/what-is-an-exoplanet/planet-types/overview/
+"""
+enum PlanetType {
+  GAS_GIANT,
+  NEPTUNIAN,
+  SUPER_EARTH,
+  TERRESTRIAL
+}
+
+type Character {
+  name: String
+  friends: [Character]
+  homeWorld: Planet
+}
+
+type Planet {
+  name: String
+  climate: String
+  type: PlanetType!
+}
