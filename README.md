@@ -179,9 +179,23 @@ You'll get this output
 
 ![example.clean.svg](examples/dot/example.clean.svg)
 
-Just as an interesting note:
+An interesting note:
 
 These tools make extensive use of `String#indexOf` because it is really efficient. It's even more efficient than the
 implementation of Rabin-Karp's algorithm
 and [here](https://stackoverflow.com/questions/9741188/java-indexof-function-more-efficient-than-rabin-karp-search-efficiency-of-text)
 is why
+
+## Dependencies
+
+- [PicoCLI](https://picocli.info/): Parse CLI args and colorize output
+
+- [Jetbrains Annotations](https://www.jetbrains.com/help/idea/annotating-source-code.html): Better code documentation
+
+- [JUnit 5](https://junit.org/junit5/): Test framework
+
+- [Snake YAML](https://bitbucket.org/asomov/snakeyaml/src): Convert from YAML (to `Map<String, Object>`) to JSON
+
+## License
+
+![GPL v3](gplv3.png)
