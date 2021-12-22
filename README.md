@@ -194,7 +194,7 @@ is why
 
 - [JUnit 5](https://junit.org/junit5/): Test framework
 
-- [Snake YAML](https://bitbucket.org/asomov/snakeyaml/src): Convert from YAML (to `Map<String, Object>`) to JSON
+- [Snake YAML](https://bitbucket.org/asomov/snakeyaml/src): parse configuration from YAML file
 
 ## License
 
