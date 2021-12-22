@@ -1,7 +1,8 @@
 package net.benjaminguzman.purge;
 
 import net.benjaminguzman.GQLFedUtils;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
@@ -17,8 +18,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class PurgeTest {
-	@AfterAll
-	static void afterEach() throws IOException {
+	@AfterEach
+	void afterEach() throws IOException {
+		deleteFiles();
+	}
+
+	@BeforeEach
+	void beforeEach() throws IOException {
+		deleteFiles();
+	}
+
+	static void deleteFiles() throws IOException {
 		Files.deleteIfExists(Path.of("src/test/resources/purge/purge.actual.graphql"));
 		Files.deleteIfExists(Path.of("src/test/resources/purge/purge2.actual.graphql"));
 		Files.deleteIfExists(Path.of("src/test/resources/purge/dir/1.actual.graphql"));

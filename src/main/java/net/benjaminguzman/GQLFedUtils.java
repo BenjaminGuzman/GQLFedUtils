@@ -9,6 +9,9 @@ import picocli.CommandLine;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 @CommandLine.Command(
@@ -64,5 +67,44 @@ public class GQLFedUtils {
 	public static boolean shouldProceed(@NotNull String message) {
 		System.out.print("🚨 " + message + ". Would you like to proceed? (Y/n): ");
 		return "Y".equals(readStdinLine());
+	}
+
+	/**
+	 * Asks for an alternative output file if the given one already exist
+	 * <p>
+	 * If the output file doesn't exist, this method will simply return it, and won't check if it is a valid path
+	 * <p>
+	 * This method will read from stdin and validate the alternative file don't exist
+	 *
+	 * @param output output file
+	 * @return an alternative output file or the same output file given as argument
+	 */
+	@NotNull
+	public static Path askAltOut(@NotNull Path output) {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		String response;
+		while (Files.exists(output)) {
+			System.out.print(
+				"File " + output + " already exist. " +
+					"Enter 'Y' if you want to overwrite it, or enter an alternative file path: "
+			);
+			try {
+				response = reader.readLine().strip();
+			} catch (IOException e) {
+				LOGGER.severe("Couldn't read from stdin. " + e.getMessage());
+				response = null;
+			}
+			if (response == null)
+				continue;
+			if ("Y".equals(response))
+				return output;
+
+			try {
+				output = Path.of(response);
+			} catch (InvalidPathException e) {
+				System.out.println("Error. " + e.getMessage());
+			}
+		}
+		return output;
 	}
 }

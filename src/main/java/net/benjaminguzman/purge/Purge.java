@@ -90,8 +90,10 @@ public class Purge implements Runnable {
 			if (!handleNoSuffix())
 				return;
 
-		if (outSuffix != null && hasConfirmedOverwrite)
+		if (outSuffix != null && hasConfirmedOverwrite) {
 			LOGGER.warning("--suffix and --overwrite can't be used together, --overwrite is ignored");
+			hasConfirmedOverwrite = true;
+		}
 
 		// process all input files with exclusions
 		inputFiles.stream()
@@ -256,6 +258,8 @@ public class Purge implements Runnable {
 		Path outFile = file;
 		if (outSuffix != null)
 			outFile = outputFileWSuffix(file);
+		if (!hasConfirmedOverwrite)
+			outFile = GQLFedUtils.askAltOut(outFile);
 		LOGGER.info("Saving output in " + outFile);
 		try {
 			Files.writeString(outFile, abstractSyntaxGraph + "\n");
