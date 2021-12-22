@@ -71,7 +71,7 @@ annotation was removed from the ones that do were annotated.
 That's basically what this subcommand does. Check [`src/test/resources`](src/test/resources) for more examples.
 `*.graphql` are input files, `*.expected.graphql` are output files (the expected output for `purge` subcommand)
 
-#### Usage
+#### Options
 
 - `-c, --config=<config>`: Path to the config file
 
