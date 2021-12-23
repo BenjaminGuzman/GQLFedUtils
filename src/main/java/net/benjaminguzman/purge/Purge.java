@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 @CommandLine.Command(
 	name = "purge",
 	description = "Purge a schema. This is done by removing all types/inputs/enums/fields whose associated " +
-		"comments contain a specific text.",
+		"comments don't contain a specific text (annotation).",
 	mixinStandardHelpOptions = true,
 	version = "gqlfedutils purge 0.1"
 )
